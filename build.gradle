@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'maven'
+    id 'maven-publish'
+    id 'org.springframework.boot' version '2.2.0.RELEASE'
+    id "com.palantir.git-version" version "0.12.2"
+    id 'com.palantir.docker' version '0.22.1'
+}
+
+gradle.ext.publishRepo = 'https://maven.pkg.github.com/dominiccobo-fyp/stackexchange-documentation-resolver'
+apply from: 'https://raw.githubusercontent.com/dominiccobo-fyp/build-common/master/repositories.gradle'
+
+group = 'com.dominiccobo.fyp'
+version = versionDetails().lastTag
+sourceCompatibility = '1.8'
+targetCompatibility = 1.8
+
+dependencies {
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket:2.2.2.RELEASE'
+    implementation 'com.dominiccobo.fyp:context-lsp-api:0.6.1'
+    implementation 'com.dominiccobo.fyp:github-processing-utils:0.1.0'
+    implementation 'org.axonframework:axon-spring-boot-starter:4.2'
+    implementation group: 'com.google.guava', name: 'guava', version: '28.2-jre'
+
+
+    testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'com.google.truth:truth:1.0'
+}
+
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+task unpack(type: Copy) {
+    dependsOn bootJar
+    from(zipTree(tasks.bootJar.outputs.files.singleFile))
+    into("build/dependency")
+}
+
+docker {
+    name "docker.pkg.github.com/dominiccobo-fyp/stackexchange-documentation-resolver/${bootJar.baseName}:${version}"
+    files bootJar.archivePath
+    dependsOn tasks.build
+    buildArgs(['JAR_FILE': "${bootJar.archiveName}"])
+}

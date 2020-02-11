@@ -12,6 +12,7 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -34,6 +35,7 @@ public class RestTemplateConfiguration {
                 .build();
         List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
         interceptors.add(new LoggingInterceptor());
+        template.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         template.setInterceptors(interceptors);
         return template;
     }
